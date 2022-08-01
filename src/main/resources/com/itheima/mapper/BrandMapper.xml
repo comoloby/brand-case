@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mapper.BrandMapper">
+
+    <resultMap id="brandResultMap" type="brand">
+        <result property="brandName" column="brand_name" />
+        <result property="companyName" column="company_name" />
+    </resultMap>
+
+
+    <!--   查询所有-->
+    <select id="selectAll" resultMap="brandResultMap">
+        select *
+        from tb_brand
+    </select>
+
+    <!--    增加-->
+
+    <insert id="add">
+        insert into tb_brand
+        values(null,#{brandName},#{companyName},#{ordered},#{description},#{status})
+    </insert>
+<!--    删除-->
+    <delete id="delete">
+        delete from tb_brand
+where id=#{id};
+    </delete>
+
+    <!--    更新-->
+    <update id="update">
+        update tb_brand
+        set brand_name=#{brandName},company_name=#{companyName},ordered=#{ordered},description=#{description},status=#{status}
+        where id=#{id}
+    </update>
+<!--    按id数组批量删除
+        in后要用动态SQL来进行拼接
+        ids是用@param自定义的遍历数组名
+        id是单个遍历出来的个体
+        where id in(?,?,?...)
+        所以是以逗号分隔，并且要加上左右括号-->
+    <delete id="deleteByIds">
+        delete
+        from tb_brand
+        where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+<!--按页查询-->
+    <select id="selectTotal" resultType="java.lang.Integer">
+        select count(*)
+        from tb_brand
+    </select>
+    <select id="selectByPage" resultMap="brandResultMap">
+        select * from tb_brand
+       limit #{begin},#{size};
+            </select>
+<!--    分页并条件模糊化查询
+        因为在mapper接口处定义了@Param,所以这里要用  brand. 来调用对应的属性-->
+    <select id="selectByPageAndCondition"  resultMap="brandResultMap">
+        select *
+        from tb_brand
+        <where>
+            <if test="brand.brandName!=null and brand.brandName!=''">
+                and brand_name like #{brand.brandName}
+            </if>
+            <if test="brand.companyName!=null and brand.companyName!=''">
+                and company_name like #{brand.companyName}
+            </if>
+            <if test="brand.status!=null">
+                and status=#{brand.status}
+            </if>
+
+        </where>
+        limit #{begin},#{size}
+    </select>
+<!--    查询符合查询条件的所有记录-->
+    <select id="selectTotalCountByCondition" resultType="java.lang.Integer">
+        select count(*)
+        from tb_brand
+        <where>
+            <if test="brandName!=null and brandName!=''">
+                and brand_name like #{brandName}
+            </if>
+            <if test="companyName!=null and companyName!=''">
+                and company_name like #{companyName}
+            </if>
+            <if test="status!=null">
+                and status=#{status}
+            </if>
+        </where>
+    </select>
+</mapper>
